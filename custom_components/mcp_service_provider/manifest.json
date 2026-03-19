@@ -1,0 +1,12 @@
+{
+  "domain": "mcp_service_provider",
+  "name": "MCP Service Provider",
+  "config_flow": true,
+  "documentation": "https://github.com/Bluscream/mcp-service-provider",
+  "issue_tracker": "https://github.com/Bluscream/mcp-service-provider/issues",
+  "dependencies": [],
+  "codeowners": ["@Bluscream"],
+  "requirements": ["mcp>=1.0.0", "httpx>=0.27.0"],
+  "version": "1.0.0",
+  "iot_standard": "none"
+}

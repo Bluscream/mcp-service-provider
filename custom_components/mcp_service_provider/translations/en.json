@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add MCP Service Provider",
+        "description": "Enter the URL and optional headers/query params for the MCP server.",
+        "data": {
+          "url": "SSE URL (e.g., http://192.168.1.100:8000/sse)",
+          "headers": "Headers (JSON string)",
+          "query_params": "Query Parameters (JSON string)"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure MCP Service Provider",
+        "description": "Update the connection details for this MCP server.",
+        "data": {
+          "url": "SSE URL (e.g., http://192.168.1.100:8000/sse)",
+          "headers": "Headers (JSON string)",
+          "query_params": "Query Parameters (JSON string)"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Invalid JSON in headers or query parameters.",
+      "cannot_connect": "Could not connect to the MCP server."
+    }
+  }
+}
