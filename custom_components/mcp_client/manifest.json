@@ -1,6 +1,6 @@
 {
-  "domain": "mcp_service_provider",
-  "name": "MCP Service Provider",
+  "domain": "mcp_client",
+  "name": "MCP Client",
   "config_flow": true,
   "documentation": "https://github.com/Bluscream/mcp-service-provider",
   "issue_tracker": "https://github.com/Bluscream/mcp-service-provider/issues",

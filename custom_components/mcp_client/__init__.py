@@ -156,18 +156,28 @@ async def _discover_and_register_services(hass: HomeAssistant, entry: ConfigEntr
             tools = response.tools
             _LOGGER.debug("Discovered %d tools from MCP server", len(tools))
 
+            # Use the config choice for naming but follow the mcp.<sanitized_name> directive
             prefix = slugify(entry.title)
-
             for tool in tools:
-                service_name = f"{prefix}_{slugify(tool.name)}"
+                # Strip mcp_ prefix and _mcp suffix from tool name
+                t_name = tool.name
+                if t_name.startswith("mcp_"):
+                    t_name = t_name[4:]
+                if t_name.endswith("_mcp"):
+                    t_name = t_name[:-4]
+                
+                # Full service name will be mcp.<prefix>_<t_name>
+                service_name = f"{prefix}_{slugify(t_name)}"
                 schema = _convert_schema_to_voluptuous(tool.inputSchema)
 
-                # Use a closure to capture variables
-                def make_handler(t_name):
+                # Use a closure to capture variables correctly
+                def make_handler(tool_to_call):
                     async def handle_service(call: ServiceCall):
                         """Handle the service call."""
-                        await _call_mcp_tool(hass, entry, t_name, call.data)
+                        await _call_mcp_tool(hass, entry, tool_to_call, call.data)
                     return handle_service
+
+                service_handler = make_handler(tool.name)
 
                 # Register service description for better UI visibility
                 fields_metadata = {}
@@ -202,7 +212,7 @@ async def _discover_and_register_services(hass: HomeAssistant, entry: ConfigEntr
                         fields_metadata[prop_name]["example"] = "example_value"
 
                 hass.services.async_register(
-                    DOMAIN, service_name, make_handler(tool.name), schema=schema
+                    DOMAIN, service_name, service_handler, schema=schema
                 )
                 
                 # Set service description for Home Assistant UI using the correct helper
