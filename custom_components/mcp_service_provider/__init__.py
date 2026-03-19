@@ -98,31 +98,49 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 @asynccontextmanager
 async def _async_mcp_client(hass: HomeAssistant, url: str, headers: dict, params: dict):
     """Attempt to connect to MCP via Streamable HTTP (modern) or SSE (classic)."""
-    # Append query params to URL if any
+    # Ensure URL ends with a trailing slash (required by ipc-mcp server)
+    if not url.endswith('/'):
+        url = url + '/'
+
+    # Extract token from Authorization header and ensure it's in query params for both transports
+    token = None
+    auth_header = headers.get("Authorization")
+    if auth_header and auth_header.lower().startswith("bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    if token:
+        # Ensure token is present in params dict
+        params = dict(params) if isinstance(params, dict) else {}
+        params.setdefault("token", token)
+
+    # Build final URL with query parameters (including token if present)
     if params:
         url_parts = list(urlparse(url))
         query = urlencode(params)
-        if url_parts[4]: # If query already exists
+        if url_parts[4]:  # existing query string
             url_parts[4] += "&" + query
         else:
             url_parts[4] = query
         url = urlunparse(url_parts)
 
-    def mcp_httpx_factory(**kwargs):
-        """Standardized factory for MCP client using HA helper."""
-        return _get_mcp_httpx_client(hass, **kwargs)
-
-    # Note: Modern servers (like ipc-mcp) use Streamable HTTP at /mcp
-    # We try Streamable HTTP first.
+    # Try Streamable HTTP first (modern IPC-MCP uses this transport)
     try:
-        # We need a client that has our headers for Streamable HTTP
         client = mcp_httpx_factory(headers=headers)
         async with streamable_http_client(url, http_client=client) as (read, write, _):
             yield read, write
-    except (httpx.HTTPStatusError, TypeError, Exception) as err:
-        error_msg = str(err)
-        # If Streamable HTTP is not supported (404/405/BadRequest), try SSE
-        _LOGGER.debug("Streamable HTTP failed, trying SSE: %s", error_msg)
+    except Exception as err:
+        _LOGGER.debug("Streamable HTTP failed (%s), falling back to SSE", err)
+        # For SSE the server expects the token in the query string, not header
+        token = None
+        auth_header = headers.get("Authorization")
+        if auth_header and auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+        # Append token to query if we have one and it's not already present
+        if token:
+            url_parts = list(urlparse(url))
+            query_dict = dict([pair.split("=") for pair in url_parts[4].split("&") if pair]) if url_parts[4] else {}
+            query_dict.setdefault("token", token)
+            url_parts[4] = urlencode(query_dict)
+            url = urlunparse(url_parts)
         async with sse_client(url, headers=headers, httpx_client_factory=mcp_httpx_factory) as (read, write):
             yield read, write
 

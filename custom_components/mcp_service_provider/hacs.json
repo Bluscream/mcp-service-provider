@@ -1,0 +1,7 @@
+{
+  "name": "MCP Service Provider",
+  "filename": "custom_components/mcp_service_provider/__init__.py",
+  "hide_default_branch": false,
+  "zip_release": true,
+  "domains": ["mcp_service_provider"]
+}
