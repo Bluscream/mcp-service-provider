@@ -10,12 +10,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 import json
 
-from .const import DOMAIN, CONF_URL, CONF_HEADERS, CONF_QUERY_PARAMS
+from .const import DOMAIN, CONF_URL, CONF_HEADERS, CONF_QUERY_PARAMS, CONF_NAME
 
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_NAME): str,
         vol.Required(CONF_URL): str,
         vol.Optional(CONF_HEADERS, default="{}"): str,
         vol.Optional(CONF_QUERY_PARAMS, default="{}"): str,
@@ -31,7 +32,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     except ValueError as err:
         raise ValueError("Headers and Query Params must be valid JSON strings.") from err
 
-    return {"title": data[CONF_URL]}
+    return {"title": data[CONF_NAME]}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

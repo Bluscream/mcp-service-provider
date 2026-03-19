@@ -1,0 +1,13 @@
+call_tool:
+  description: "Call an MCP tool with dynamic arguments."
+  fields:
+    tool_name:
+      description: "The name of the MCP tool to call (as registered in HASS, e.g. login)."
+      required: true
+      example: "login"
+    arguments:
+      description: "A JSON object containing the arguments for the tool."
+      required: false
+      example: '{"username": "admin"}'
+      selector:
+        object: {}
