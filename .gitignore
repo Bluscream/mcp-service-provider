@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+config/
+docker-compose.yml
+home-assistant.log*
+.storage/
+.DS_Store
